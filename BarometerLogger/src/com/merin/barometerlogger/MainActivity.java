@@ -20,20 +20,22 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Sensor mSensor;
 	private int mdelay;
 	private TextView tv2;
+	private final int DELAY_VALUE = 50000;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		tv2 = (TextView) findViewById(android.R.id.text2);
-		
+		tv2 = (TextView) findViewById(R.id.textview2);
+		tv2.setText("Loading");
 		mSensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
 		//List<Sensor> deviceSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
 			mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 		}
 		mdelay = mSensor.getMinDelay();
-		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
+
 	}
 
 	@Override
@@ -52,8 +54,28 @@ public class MainActivity extends Activity implements SensorEventListener{
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		float p =  event.values[0];
-		tv2.setText(p);
 		
+		long dt = event.timestamp;
+
+		CharSequence mText;
+		mText = " " + p + "   " + dt;
+		
+		tv2.setText(mText);
+	}
+
+	@Override
+	protected void onPause() {
+		mSensorManager.unregisterListener(this);
+		super.onPause();
+
+	}
+
+	@Override
+	protected void onResume() {
+		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
+		super.onResume();
+		//mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
 	}
 
 }
