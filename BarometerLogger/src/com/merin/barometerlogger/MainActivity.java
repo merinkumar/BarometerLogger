@@ -1,5 +1,6 @@
 package com.merin.barometerlogger;
 
+import java.text.NumberFormat;
 import java.util.List;
 
 import org.xml.sax.Parser;
@@ -11,6 +12,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -20,14 +22,31 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Sensor mSensor;
 	private int mdelay;
 	private TextView tv2;
+	private TextView mMaxView;
+	private TextView mMinView;
+	
+	private NumberFormat nformat = NumberFormat.getNumberInstance();
 	private final int DELAY_VALUE = 50000;
+	private float mMax = 0;
+	private float mMin = 0;
+	private Boolean mFirstRun = true;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		
+		nformat.setMaximumFractionDigits(1);
+		nformat.setMinimumFractionDigits(1);
+		
 		tv2 = (TextView) findViewById(R.id.textview2);
 		tv2.setText("Loading");
+		
+		mMaxView = (TextView) findViewById(R.id.textMax);
+		
+		mMinView = (TextView) findViewById(R.id.textMin);
+		
 		mSensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
 		//List<Sensor> deviceSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
@@ -55,12 +74,35 @@ public class MainActivity extends Activity implements SensorEventListener{
 	public void onSensorChanged(SensorEvent event) {
 		float p =  event.values[0];
 		
-		long dt = event.timestamp;
-
+		//long dt = event.timestamp;
+		if (mFirstRun){
+			mFirstRun = false;
+			mMax = p;
+			mMin = p;
+			setView();
+		}
+		checkMinMax(p);
+		
 		CharSequence mText;
-		mText = " " + p + "   " + dt;
+		mText = nformat.format(p) + "   ";
 		
 		tv2.setText(mText);
+	}
+
+	private void checkMinMax(float p) {
+		if(p > mMax){
+			mMax = p;
+			setView();
+		}else if(p < mMin){
+			mMin = p;
+			setView();
+		}
+		
+	}
+	
+	private void setView(){
+		mMaxView.setText(nformat.format(mMax));
+		mMinView.setText(nformat.format(mMin));
 	}
 
 	@Override

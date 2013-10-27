@@ -4,5 +4,8 @@
     <string name="app_name">BarometerLogger</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="minimum_reading">Min Reading</string>
+    <string name="maximum_reading">Max reading</string>
+    <string name="_0_0">0.0</string>
 
 </resources>
