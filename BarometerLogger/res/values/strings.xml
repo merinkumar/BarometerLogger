@@ -7,5 +7,7 @@
     <string name="minimum_reading">Min Reading</string>
     <string name="maximum_reading">Max reading</string>
     <string name="_0_0">0.0</string>
+    <string name="hw_acceleration">HW Acceleration</string>
+    <string name="show_fps">Show FPS</string>
 
 </resources>
