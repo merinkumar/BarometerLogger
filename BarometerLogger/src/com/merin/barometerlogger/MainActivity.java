@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -12,6 +13,8 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -30,7 +33,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private TextView mMaxView;
 	private TextView mMinView;
 	private float p;
-	
+	private Intent startIntent;  
+	private Button startServiceButton;
 	// objects used for androidplot implementation     
 	private static final Number MINUS_Y_AXIS = 960;  
 	private static final Number PLUS_Y_AXIS = 990;
@@ -53,8 +57,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		
+
 		setupPlotter();
 		setupView();
 		
@@ -63,6 +66,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private void setupView() {
 		nformat.setMaximumFractionDigits(1);
 		nformat.setMinimumFractionDigits(1);
+		startIntent = new Intent(MainActivity.this,BaroService.class);        
+		startServiceButton = (Button) findViewById(R.id.loggerButton);
 		
 		tv2 = (TextView) findViewById(R.id.textview2);
 		tv2.setText("Loading");
@@ -78,6 +83,15 @@ public class MainActivity extends Activity implements SensorEventListener{
 		}
 		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
 		
+		
+		startServiceButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+			startService(startIntent);
+				
+			}
+		});
 	}
 
 	private void setupPlotter() {
@@ -169,6 +183,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	}
 
 	private void updatePlotter() {
+		@SuppressWarnings("unused")
 		Number[] series1Numbers = {p};
         //aprLevelsSeries.setModel(Arrays.asList(series1Numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
  

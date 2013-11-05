@@ -6,11 +6,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
+import android.hardware.SensorEventListener;  
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class BaroService extends Service implements SensorEventListener{
@@ -20,7 +19,7 @@ public class BaroService extends Service implements SensorEventListener{
 	private float p;
 	private final int DELAY_VALUE = 1000000;
 	private NumberFormat nformat = NumberFormat.getNumberInstance();
-	
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -60,7 +59,7 @@ public class BaroService extends Service implements SensorEventListener{
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		// TODO Auto-generated method stub
+		Toast.makeText(BaroService.this, "onStartCommand : ", Toast.LENGTH_SHORT).show();
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -78,10 +77,9 @@ public class BaroService extends Service implements SensorEventListener{
 	    new SensorEventLoggerTask().execute(event);
 		stopSelf();
 		
-	    p =  event.values[0];
-		
-		CharSequence mText;
-		mText = nformat.format(p);
+
+		//CharSequence mText;
+		//mText = nformat.format(p);
 		
 	}
 	
@@ -91,6 +89,8 @@ public class BaroService extends Service implements SensorEventListener{
 		@Override
 		protected Void doInBackground(SensorEvent... events) {
 			SensorEvent event = events[0];
+		    p =  event.values[0];
+			Toast.makeText(BaroService.this, " " +  p, Toast.LENGTH_SHORT).show();
 			return null;
 		}
 		
