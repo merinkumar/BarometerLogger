@@ -1,16 +1,6 @@
 package com.merin.barometerlogger;
 
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.List;
-
-import org.xml.sax.Parser;
-
-import com.androidplot.util.PlotStatistics;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
 
 import android.app.Activity;
 import android.app.Service;
@@ -20,30 +10,33 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.text.format.Formatter;
 import android.view.Menu;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.androidplot.util.PlotStatistics;
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
+
 public class MainActivity extends Activity implements SensorEventListener{
 
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
-	private int mdelay;
 	private TextView tv2;
 	private TextView mMaxView;
 	private TextView mMinView;
 	private float p;
 	
-	// objects used for androidplot implementation
-            // number of points to plot in history
-	private static final Number MINUS_Y_AXIS = 900;
-	private static final Number PLUS_Y_AXIS = 1000;
+	// objects used for androidplot implementation     
+	private static final Number MINUS_Y_AXIS = 960;  
+	private static final Number PLUS_Y_AXIS = 990;
 	private static final Number MINUS_X_AXIS = 0;
 	private static final Number PLUS_X_AXIS = 60;
-	private static final int HISTORY_SIZE = (Integer) PLUS_X_AXIS;
+	private static final int HISTORY_SIZE = (Integer) PLUS_X_AXIS; // number of points to plot in history
 	
 	private XYPlot aprHistoryPlot = null;
     private CheckBox hwAcceleratedCb;
@@ -63,7 +56,11 @@ public class MainActivity extends Activity implements SensorEventListener{
 		
 		
 		setupPlotter();
+		setupView();
 		
+	}
+
+	private void setupView() {
 		nformat.setMaximumFractionDigits(1);
 		nformat.setMinimumFractionDigits(1);
 		
@@ -79,9 +76,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
 			mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 		}
-		mdelay = mSensor.getMinDelay();
 		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
-
+		
 	}
 
 	private void setupPlotter() {
