@@ -1,8 +1,11 @@
 package com.merin.barometerlogger;
 
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -10,6 +13,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 public class BaroService extends Service implements SensorEventListener{
@@ -19,7 +23,10 @@ public class BaroService extends Service implements SensorEventListener{
 	private float p;
 	private final int DELAY_VALUE = 1000000;
 	private NumberFormat nformat = NumberFormat.getNumberInstance();
-
+	private final static String TAG = "merin-tag";
+	private MyDBHelper dbHelper;
+	private ContentValues cv;
+	private Calendar cal;
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -35,6 +42,9 @@ public class BaroService extends Service implements SensorEventListener{
 		
 		mSensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
 		
+		dbHelper = new MyDBHelper(getApplicationContext());
+		
+		dbHelper.openWrite();
 		
 		//Check if sensor is present and then get an instance
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
@@ -75,6 +85,7 @@ public class BaroService extends Service implements SensorEventListener{
 	public void onSensorChanged(SensorEvent event) {
 		
 	    new SensorEventLoggerTask().execute(event);
+		mSensorManager.unregisterListener(this);
 		stopSelf();
 		
 
@@ -90,7 +101,20 @@ public class BaroService extends Service implements SensorEventListener{
 		protected Void doInBackground(SensorEvent... events) {
 			SensorEvent event = events[0];
 		    p =  event.values[0];
-			Toast.makeText(BaroService.this, " " +  p, Toast.LENGTH_SHORT).show();
+		    Log.e(TAG, "value : " + p);
+		    
+		    cal = Calendar.getInstance();
+		    SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+		    String fdate = sdf.format(cal.getTime());
+		    cv = new ContentValues();
+		    cv.put(MyDBHelper.COL_MBARS, p);
+		    cv.put(MyDBHelper.COL_TSTAMP, fdate);
+		    Log.e(TAG, "mbars : " + cv.get(MyDBHelper.COL_MBARS));
+		    Log.e(TAG, "date : " + cv.get(MyDBHelper.COL_TSTAMP));
+		    
+		    
+		    dbHelper.insertrow(MyDBHelper.TABLE_PRS, cv);
+			//Toast.makeText(BaroService.this, " " +  p, Toast.LENGTH_SHORT).show();
 			return null;
 		}
 		

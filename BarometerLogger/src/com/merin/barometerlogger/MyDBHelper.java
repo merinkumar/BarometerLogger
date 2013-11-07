@@ -18,7 +18,7 @@ public static String TABLE_PRS = "PRESSURE";
 public static String COL_MBARS = "MBARS";
 public static String COL_TSTAMP = "TSTAMP";
 
-private final static String CREATE_PRESSURE_TABLE = "create table if not exists "+TABLE_PRS+" ("+COL_MBARS+" CHAR PRIMARY KEY, "+COL_TSTAMP+" TEXT NOT NULL)";
+private final static String CREATE_PRESSURE_TABLE = "create table if not exists "+TABLE_PRS+" ("+COL_MBARS+" REAL PRIMARY KEY, "+COL_TSTAMP+" TEXT NOT NULL)";
 	
 private final static String TAG = "merin-tag";
 DatabaseHelper sqlHelper;
@@ -89,6 +89,9 @@ private SQLiteDatabase db;
 
     
     public long insertrow(String table, ContentValues cvs){
+    	
+	    Log.e(TAG, "mbars service: " + cvs.get(MyDBHelper.COL_MBARS));
+	    Log.e(TAG, "date service: " + cvs.get(MyDBHelper.COL_TSTAMP));
     	return db.insert(table, null, cvs);
 		
 }
