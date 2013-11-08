@@ -3,7 +3,10 @@ package com.merin.barometerlogger;
 import java.text.NumberFormat;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -34,7 +37,12 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private TextView mMinView;
 	private float p;
 	private Intent startIntent;  
+	private Intent baroIntent;
+	private PendingIntent schedulerIntent;
 	private Button startServiceButton;
+	private Button startButton;
+	private Button stopButton;
+	private AlarmManager scheduler;
 	// objects used for androidplot implementation     
 	private static final Number MINUS_Y_AXIS = 960;  
 	private static final Number PLUS_Y_AXIS = 990;
@@ -68,10 +76,13 @@ public class MainActivity extends Activity implements SensorEventListener{
 		nformat.setMinimumFractionDigits(1);
 		startIntent = new Intent(MainActivity.this,BaroService.class);        
 		startServiceButton = (Button) findViewById(R.id.loggerButton);
-		
+		startButton = (Button) findViewById(R.id.sButton);
+		stopButton = (Button) findViewById(R.id.stButton);
 		tv2 = (TextView) findViewById(R.id.textview2);
 		tv2.setText("Loading");
-		
+		scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		baroIntent = new Intent(getApplicationContext(),BaroService.class);
+		schedulerIntent = PendingIntent.getService(getApplicationContext(), 0, baroIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		mMaxView = (TextView) findViewById(R.id.textMax);
 		
 		mMinView = (TextView) findViewById(R.id.textMin);
@@ -89,6 +100,24 @@ public class MainActivity extends Activity implements SensorEventListener{
 			@Override
 			public void onClick(View v) {
 			startService(startIntent);
+				
+			}
+		});
+		
+		startButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+
+				scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES, schedulerIntent);
+			}
+		});  
+		
+		stopButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				scheduler.cancel(schedulerIntent);
 				
 			}
 		});

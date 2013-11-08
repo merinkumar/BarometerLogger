@@ -98,4 +98,20 @@
         android:layout_centerHorizontal="true"
         android:text="Enable Logger" />
 
+    <Button
+        android:id="@+id/sButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/loggerButton"
+        android:layout_alignLeft="@+id/loggerButton"
+        android:text="Start Recurring" />
+
+    <Button
+        android:id="@+id/stButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/sButton"
+        android:layout_alignLeft="@+id/sButton"
+        android:text="Stop Recurring" />
+
 </RelativeLayout>
