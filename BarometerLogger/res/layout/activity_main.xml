@@ -96,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/textview2"
         android:layout_centerHorizontal="true"
-        android:text="Enable Logger" />
+        android:text="Plot Data !" />
 
     <Button
         android:id="@+id/sButton"

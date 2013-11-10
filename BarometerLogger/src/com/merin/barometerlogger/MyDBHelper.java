@@ -1,6 +1,8 @@
 package com.merin.barometerlogger;
 
 
+import org.xml.sax.Parser;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -17,6 +19,7 @@ private static int    DB_VERSION = 1;
 public static String TABLE_PRS = "PRESSURE";
 public static String COL_MBARS = "MBARS";
 public static String COL_TSTAMP = "TSTAMP";
+private float mbarArray[] = new float[1];
 
 private final static String CREATE_PRESSURE_TABLE = "create table if not exists "+TABLE_PRS+" ("+COL_MBARS+" REAL PRIMARY KEY, "+COL_TSTAMP+" TEXT NOT NULL)";
 	
@@ -96,12 +99,12 @@ private SQLiteDatabase db;
 		
 }
     
-    public Boolean getdata(String table, String key, String pass){
+    public float[] getdata(String table, String key, String date){
     	
     	ContentValues cv = new ContentValues();
     	SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
     	queryBuilder.setTables(table);
-    	queryBuilder.appendWhere(MyDBHelper.COL_MBARS + " = '" + key + "'");
+    	//queryBuilder.appendWhere(MyDBHelper.COL_MBARS + " = '" + key + "'");
     	Cursor c = null;
     	//String sql = "select * from " + table + " where MyDBHelper.COL_USERID = " + key;
     	//String sql = String.format("select * from USERCRED where USERID = " + " '" + key + "' ");
@@ -115,35 +118,32 @@ private SQLiteDatabase db;
 		
 
 		
-/*		if(c != null){
-			c.moveToFirst();
-			while(!c.isAfterLast()){
+		if(c != null){
 			
-			System.out.println("USERID : " + c.getString(0));
-			System.out.println("PASS : " + c.getString(1));
-			System.out.println("EMAIL : " + c.getString(2));
+			mbarArray = new float[c.getCount()];
+			
+			c.moveToFirst();
+			int i = 0;
+			while(!c.isAfterLast()){
+				
+			mbarArray[i] = 	c.getFloat(0);
+			i++;	
+				
+			cv.put(COL_MBARS, c.getFloat(0));
+			cv.put(COL_TSTAMP, c.getString(1));  
+			
+			System.out.println("mBARS : " + c.getString(0));
+			System.out.println("mDATE : " + c.getString(1));
+			//System.out.println("EMAIL : " + c.getString(2));
 			c.moveToNext();
 		}
+			//return cv;
 			c.close();
-		}*/
-    	//Toast.makeText(mCtx, c.getString(0), Toast.LENGTH_LONG).show();
-    	
-		if(!(!(c.moveToFirst()) || c.getCount() ==0)){
-		String a = key;
-		c.moveToFirst();
-		String b = c.getString(0); 
-		String p = pass;
-		String p1 = c.getString(1);
-    	if(a.equals(b) && p.equals(p1)){
-    		return true;
-    	}else{
-    		Toast.makeText(mCtx, "user ID/pass incorrect", Toast.LENGTH_LONG).show();
-    		return false;
-    	}
-		}else{
-			System.out.println("merin-cursor error");
-    		return false;
+			return mbarArray;
 		}
+    	//Toast.makeText(mCtx, c.getString(0), Toast.LENGTH_LONG).show();
+		return mbarArray;
+    	
 
     	
 

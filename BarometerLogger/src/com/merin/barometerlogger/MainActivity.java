@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -36,6 +37,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private TextView mMaxView;
 	private TextView mMinView;
 	private float p;
+	private int i = 0;
 	private Intent startIntent;  
 	private Intent baroIntent;
 	private PendingIntent schedulerIntent;
@@ -43,11 +45,13 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Button startButton;
 	private Button stopButton;
 	private AlarmManager scheduler;
+	private MyDBHelper dbHelper;
+	private float[] inputCv = new float[30];;
 	// objects used for androidplot implementation     
 	private static final Number MINUS_Y_AXIS = 960;  
-	private static final Number PLUS_Y_AXIS = 990;
+	private static final Number PLUS_Y_AXIS = 1024;
 	private static final Number MINUS_X_AXIS = 0;
-	private static final Number PLUS_X_AXIS = 60;
+	private static final Number PLUS_X_AXIS = 96;
 	private static final int HISTORY_SIZE = (Integer) PLUS_X_AXIS; // number of points to plot in history
 	
 	private XYPlot aprHistoryPlot = null;
@@ -99,8 +103,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 			
 			@Override
 			public void onClick(View v) {
-			startService(startIntent);
-				
+			//startService(startIntent);
+				unloadDB();
+				updatePlotter();
 			}
 		});
 		
@@ -123,8 +128,19 @@ public class MainActivity extends Activity implements SensorEventListener{
 		});
 	}
 
+	protected void unloadDB() {
+		inputCv = dbHelper.getdata(MyDBHelper.TABLE_PRS, null, null);  
+		
+	}
+
 	private void setupPlotter() {
 		// setup the APR History plot:
+		
+
+		
+		dbHelper = new MyDBHelper(getApplicationContext());
+		dbHelper.openRead();
+		
         aprHistoryPlot = (XYPlot) findViewById(R.id.aprHistoryPlot);
  
         pressureHistorySeries = new SimpleXYSeries("Atmospheric Pressure");
@@ -194,9 +210,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 	public void onSensorChanged(SensorEvent event) {
 		p =  event.values[0];
 		
-		updatePlotter();
+		//updatePlotter();
 		
-		//long dt = event.timestamp;
+		long dt = event.timestamp;
 		if (mFirstRun){
 			mFirstRun = false;
 			mMax = p;
@@ -206,24 +222,29 @@ public class MainActivity extends Activity implements SensorEventListener{
 		checkMinMax(p);
 		
 		CharSequence mText;
-		mText = nformat.format(p) + "   ";
+		mText = nformat.format(p) + "";
 		
 		tv2.setText(mText);
 	}
 
 	private void updatePlotter() {
-		@SuppressWarnings("unused")
-		Number[] series1Numbers = {p};
+
+		//Number[] series1Numbers = {p};
         //aprLevelsSeries.setModel(Arrays.asList(series1Numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
  
-        // get rid the oldest sample in history:
-        if (pressureHistorySeries.size() > HISTORY_SIZE) {
-            pressureHistorySeries.removeFirst();
-        }
-        
-     // add the latest history sample:
-        pressureHistorySeries.addLast(null, p);
- 
+		for(i = 0; i < inputCv.length; i++){
+	        // get rid the oldest sample in history:
+	        if (pressureHistorySeries.size() > HISTORY_SIZE) {
+	            pressureHistorySeries.removeFirst();
+	        }
+	        // add the latest history sample:
+	        //pressureHistorySeries.addLast(null, inputCv.get(key));
+	        System.out.println("inputCv[" + i + "]" + inputCv[i]);
+			
+	        // add the latest history sample:
+	        pressureHistorySeries.addLast(null, inputCv[i]);
+		}
+
         // redraw the Plots:
         aprHistoryPlot.redraw();
 	}
