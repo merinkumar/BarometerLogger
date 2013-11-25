@@ -1,9 +1,12 @@
 package com.merin.barometerlogger;
 
 import java.text.NumberFormat;
+import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
@@ -18,10 +21,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidplot.util.PlotStatistics;
 import com.androidplot.xy.BoundaryMode;
@@ -36,6 +44,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private TextView tv2;
 	private TextView mMaxView;
 	private TextView mMinView;
+	String[] mdate_key;
 	private float p;
 	private int i = 0;
 	private Intent startIntent;  
@@ -44,7 +53,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Button startServiceButton;
 	private Button startButton;
 	private Button stopButton;
+	private Spinner dateSpinner;
 	private AlarmManager scheduler;
+	private Calendar mCalendar;
 	private MyDBHelper dbHelper;
 	private float[] inputCv = new float[30];;
 	// objects used for androidplot implementation     
@@ -64,7 +75,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private float mMax = 0;
 	private float mMin = 0;
 	private Boolean mFirstRun = true;
-	
+	private DatePickerDialog.OnDateSetListener dateLis;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,12 +87,14 @@ public class MainActivity extends Activity implements SensorEventListener{
 	}
 
 	private void setupView() {
+		mCalendar = Calendar.getInstance();
 		nformat.setMaximumFractionDigits(1);
 		nformat.setMinimumFractionDigits(1);
 		startIntent = new Intent(MainActivity.this,BaroService.class);        
 		startServiceButton = (Button) findViewById(R.id.loggerButton);
 		startButton = (Button) findViewById(R.id.sButton);
 		stopButton = (Button) findViewById(R.id.stButton);
+		dateSpinner = (Spinner) findViewById(R.id.spinner1);
 		tv2 = (TextView) findViewById(R.id.textview2);
 		tv2.setText("Loading");
 		scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -93,6 +106,18 @@ public class MainActivity extends Activity implements SensorEventListener{
 		
 		mSensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
 		//List<Sensor> deviceSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+		
+		dateLis = new DatePickerDialog.OnDateSetListener() {
+			
+			@Override
+			public void onDateSet(DatePicker view, int year, int monthOfYear,
+					int dayOfMonth) {
+				String s = (monthOfYear + 1) + "-" + (dayOfMonth) + "-" + year;
+				String a = "";
+				mdate_key = new String[] {s,a};
+			}
+		};
+		
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
 			mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 		}
@@ -126,10 +151,33 @@ public class MainActivity extends Activity implements SensorEventListener{
 				
 			}
 		});
+		
+		dateSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(final AdapterView<?> arg0, View arg1,
+					final int arg2, long arg3) {
+				//Toast.makeText(arg0.getContext(), 
+				//		"OnItemSelectedListener : " + arg2,Toast.LENGTH_SHORT).show();
+				if (arg2 == 0){
+					mdate_key = null;
+				}else if (arg2 == 1) 
+				{
+					new DatePickerDialog(MainActivity.this, dateLis, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH)).show();
+				}
+				
+			};
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 
 	protected void unloadDB() {
-		inputCv = dbHelper.getdata(MyDBHelper.TABLE_PRS, null, null);  
+		inputCv = dbHelper.getdata(MyDBHelper.TABLE_PRS, MyDBHelper.COL_TSTAMP, mdate_key);  
 		
 	}
 
@@ -212,7 +260,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 		
 		//updatePlotter();
 		
-		long dt = event.timestamp;
 		if (mFirstRun){
 			mFirstRun = false;
 			mMax = p;

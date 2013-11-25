@@ -1,8 +1,5 @@
 package com.merin.barometerlogger;
 
-
-import org.xml.sax.Parser;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
-import android.widget.Toast;
 
 public class MyDBHelper {
 private static final String DB_NAME = "logger.db";
@@ -99,16 +95,17 @@ private SQLiteDatabase db;
 		
 }
     
-    public float[] getdata(String table, String key, String date){
+    public float[] getdata(String table, String key, String date[]){
     	
-    	ContentValues cv = new ContentValues();
+    	//ContentValues cv = new ContentValues();
     	SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
     	queryBuilder.setTables(table);
-    	//queryBuilder.appendWhere(MyDBHelper.COL_MBARS + " = '" + key + "'");
+    	if (date != null){
+    		queryBuilder.appendWhere(MyDBHelper.COL_TSTAMP + " = '" + date[0] + "'");
+    	}
+
     	Cursor c = null;
-    	//String sql = "select * from " + table + " where MyDBHelper.COL_USERID = " + key;
-    	//String sql = String.format("select * from USERCRED where USERID = " + " '" + key + "' ");
-    	//Cursor c = null;
+
 		try {
 			c = queryBuilder.query(db, null, null, null, null, null, null);
 		} catch (Exception e) {
@@ -129,11 +126,10 @@ private SQLiteDatabase db;
 			mbarArray[i] = 	c.getFloat(0);
 			i++;	
 				
-			cv.put(COL_MBARS, c.getFloat(0));
-			cv.put(COL_TSTAMP, c.getString(1));  
-			
-			System.out.println("mBARS : " + c.getString(0));
-			System.out.println("mDATE : " + c.getString(1));
+			//cv.put(COL_MBARS, c.getFloat(0));
+			//cv.put(COL_TSTAMP, c.getString(1));  
+			//System.out.println("mBARS : " + c.getString(0));
+			//System.out.println("mDATE : " + c.getString(1));
 			//System.out.println("EMAIL : " + c.getString(2));
 			c.moveToNext();
 		}

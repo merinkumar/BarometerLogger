@@ -104,7 +104,7 @@ public class BaroService extends Service implements SensorEventListener{
 		    Log.e(TAG, "value : " + p);
 		    
 		    cal = Calendar.getInstance();
-		    SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+		    SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
 		    String fdate = sdf.format(cal.getTime());
 		    cv = new ContentValues();
 		    cv.put(MyDBHelper.COL_MBARS, p);
