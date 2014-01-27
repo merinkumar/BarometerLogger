@@ -19,6 +19,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -49,6 +50,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private int i = 0;
 	private Intent startIntent;  
 	private Intent baroIntent;
+	private Intent settingIntent;
 	private PendingIntent schedulerIntent;
 	private Button startServiceButton;
 	private Button startButton;
@@ -90,7 +92,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 		mCalendar = Calendar.getInstance();
 		nformat.setMaximumFractionDigits(1);
 		nformat.setMinimumFractionDigits(1);
-		startIntent = new Intent(MainActivity.this,BaroService.class);        
+		startIntent = new Intent(MainActivity.this,BaroService.class);    
+		settingIntent = new Intent(MainActivity.this,SettingsActivity.class);
 		startServiceButton = (Button) findViewById(R.id.loggerButton);
 		startButton = (Button) findViewById(R.id.sButton);
 		stopButton = (Button) findViewById(R.id.stButton);
@@ -129,6 +132,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 			@Override
 			public void onClick(View v) {
 			//startService(startIntent);
+				
 				unloadDB();
 				updatePlotter();
 			}
@@ -247,6 +251,19 @@ public class MainActivity extends Activity implements SensorEventListener{
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    super.onOptionsItemSelected(item);
+	    startActivity(settingIntent);
+		//return super.onOptionsItemSelected(item);
+ 		return true;
+	}
+	
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {

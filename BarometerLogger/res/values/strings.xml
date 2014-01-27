@@ -12,8 +12,10 @@
     <string name="plot_data_">Plot Data !</string>
     <string name="start_recurring">Start Recurring</string>
     <string name="stop_recurring">Stop Recurring</string>
+
     <string-array name="selection_arrays">
         <item>last 24 hrs</item>
         <item>Specific date</item>
     </string-array>
+
 </resources>

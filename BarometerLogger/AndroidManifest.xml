@@ -22,7 +22,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:enabled="true" android:name=".BaroService" />
+        <activity
+            android:name="com.merin.barometerlogger.SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
+        <service
+            android:name="com.merin.barometerlogger.BaroService"
+            android:enabled="true" />
+
+
     </application>
 
 </manifest>
