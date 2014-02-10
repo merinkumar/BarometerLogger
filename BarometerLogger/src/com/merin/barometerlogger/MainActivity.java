@@ -1,15 +1,10 @@
 package com.merin.barometerlogger;
 
-import java.text.NumberFormat;
-import java.util.Calendar;
-
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -38,281 +33,260 @@ import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 
+import java.text.NumberFormat;
+import java.util.Calendar;
+
 public class MainActivity extends Activity implements SensorEventListener{
 
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
-	private TextView tv2;
+	private TextView mTextView2;
 	private TextView mMaxView;
 	private TextView mMinView;
-	String[] mdate_key;
-	private float p;
-	private int i = 0;
-	private Intent startIntent;  
-	private Intent baroIntent;
-	private Intent settingIntent;
-	private PendingIntent schedulerIntent;
-	private Button startServiceButton;
-	private Button startButton;
-	private Button stopButton;
-	private Spinner dateSpinner;
-	private AlarmManager scheduler;
+	private TextView mSensorText;
+	private String[] mDate_key;
+	private float mPressure;
+	private int mIndex = 0;
+	private Intent mServiceIntent;
+	private Intent mBaroIntent;
+	private Intent mSettingIntent;
+	private PendingIntent mSchedulerIntent;
+	private Button mStartServiceButton;
+	private Button mStartButton;
+	private Button mStopButton;
+	private Spinner mDateSpinner;
+	private AlarmManager mScheduler;
 	private Calendar mCalendar;
-	private MyDBHelper dbHelper;
-	private float[] inputCv = new float[30];;
-	// objects used for androidplot implementation     
-	private static final Number MINUS_Y_AXIS = 960;  
+	private MyDBHelper mDBHelper;
+	private float[] mInputCvalue = new float[30];;
+    private NumberFormat mNumformat = NumberFormat.getNumberInstance();
+    private final int DELAY_VALUE = 1000000;
+    private float mMax = 0;
+    private float mMin = 0;
+    private Boolean mFirstRun = true;
+    private DatePickerDialog.OnDateSetListener mDateLis;
+	// objects used for androidplot implementation
+	private static final Number MINUS_Y_AXIS = 960;
 	private static final Number PLUS_Y_AXIS = 1024;
 	private static final Number MINUS_X_AXIS = 0;
 	private static final Number PLUS_X_AXIS = 96;
 	private static final int HISTORY_SIZE = (Integer) PLUS_X_AXIS; // number of points to plot in history
-	
-	private XYPlot aprHistoryPlot = null;
-    private CheckBox hwAcceleratedCb;
-    private CheckBox showFpsCb;
-    private SimpleXYSeries pressureHistorySeries = null;
-    
-	private NumberFormat nformat = NumberFormat.getNumberInstance();
-	private final int DELAY_VALUE = 1000000;
-	private float mMax = 0;
-	private float mMin = 0;
-	private Boolean mFirstRun = true;
-	private DatePickerDialog.OnDateSetListener dateLis;
+	private XYPlot mARPHistoryPlot = null;
+    private CheckBox mHWAcceleratedCb;
+    private CheckBox mShowFPSCb;
+    private SimpleXYSeries mPressureHistorySeries = null;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		setupPlotter();
-		setupView();
-		
+		setupPlotter();           //setup the androidplot
+		setupView();              //setup the UI
 	}
 
 	private void setupView() {
 		mCalendar = Calendar.getInstance();
-		nformat.setMaximumFractionDigits(1);
-		nformat.setMinimumFractionDigits(1);
-		startIntent = new Intent(MainActivity.this,BaroService.class);    
-		settingIntent = new Intent(MainActivity.this,SettingsActivity.class);
-		startServiceButton = (Button) findViewById(R.id.loggerButton);
-		startButton = (Button) findViewById(R.id.sButton);
-		stopButton = (Button) findViewById(R.id.stButton);
-		dateSpinner = (Spinner) findViewById(R.id.spinner1);
-		tv2 = (TextView) findViewById(R.id.textview2);
-		tv2.setText("Loading");
-		scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		baroIntent = new Intent(getApplicationContext(),BaroService.class);
-		schedulerIntent = PendingIntent.getService(getApplicationContext(), 0, baroIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		mNumformat.setMaximumFractionDigits(1);
+		mNumformat.setMinimumFractionDigits(1);
+		//intent for starting the background service
+		mServiceIntent = new Intent(MainActivity.this,BaroService.class);
+		//intent for settings view
+		mSettingIntent = new Intent(MainActivity.this,SettingsActivity.class);
+		//Getting instance of UI components
+		mStartServiceButton = (Button) findViewById(R.id.loggerButton);
+		mStartButton = (Button) findViewById(R.id.sButton);
+		mStopButton = (Button) findViewById(R.id.stButton);
+		mDateSpinner = (Spinner) findViewById(R.id.spinner1);
+		mTextView2 = (TextView) findViewById(R.id.textview2);
+		mTextView2.setText("Loading");
+		//getting scheduler instance for taking pressure readings periodically
+		mScheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		mBaroIntent = new Intent(getApplicationContext(),BaroService.class);
+		mSchedulerIntent = PendingIntent.getService(getApplicationContext(), 0, mBaroIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		mMaxView = (TextView) findViewById(R.id.textMax);
-		
 		mMinView = (TextView) findViewById(R.id.textMin);
-		
 		mSensorManager = (SensorManager) getSystemService(Service.SENSOR_SERVICE);
-		//List<Sensor> deviceSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-		
-		dateLis = new DatePickerDialog.OnDateSetListener() {
-			
+
+		mDateLis = new DatePickerDialog.OnDateSetListener() {
 			@Override
 			public void onDateSet(DatePicker view, int year, int monthOfYear,
 					int dayOfMonth) {
 				String s = (monthOfYear + 1) + "-" + (dayOfMonth) + "-" + year;
 				String a = "";
-				mdate_key = new String[] {s,a};
+				mDate_key = new String[] {s,a};
 			}
 		};
-		
+
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        mSensorText = (TextView) findViewById(R.id.sensorText);
+
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
-			mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+		    //sensor is present in the device
+
+			mSensorText.setText("PRESENT");
+			mSensorText.setTextColor(Color.GREEN);
+		}else{
+            //sensor is NOT present in the device
+	          mSensorText.setText("NOT PRESENT");
+	          mSensorText.setTextColor(Color.RED);
+            Toast.makeText(this,"Your device dont have Barometer SENSOR, this app wont work",Toast.LENGTH_SHORT).show();
 		}
 		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
-		
-		
-		startServiceButton.setOnClickListener(new OnClickListener() {
-			
+
+
+		mStartServiceButton.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
-			//startService(startIntent);
-				
 				unloadDB();
 				updatePlotter();
 			}
 		});
-		
-		startButton.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
 
-				scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES, schedulerIntent);
-			}
-		});  
-		
-		stopButton.setOnClickListener(new OnClickListener() {
-			
+		mStartButton.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View v) {
-				scheduler.cancel(schedulerIntent);
-				
+				mScheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), AlarmManager.INTERVAL_FIFTEEN_MINUTES, mSchedulerIntent);
 			}
 		});
-		
-		dateSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+		mStopButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mScheduler.cancel(mSchedulerIntent);
+
+			}
+		});
+
+		mDateSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
 			public void onItemSelected(final AdapterView<?> arg0, View arg1,
 					final int arg2, long arg3) {
-				//Toast.makeText(arg0.getContext(), 
+				//Toast.makeText(arg0.getContext(),
 				//		"OnItemSelectedListener : " + arg2,Toast.LENGTH_SHORT).show();
 				if (arg2 == 0){
-					mdate_key = null;
-				}else if (arg2 == 1) 
+					mDate_key = null;
+				}else if (arg2 == 1)
 				{
-					new DatePickerDialog(MainActivity.this, dateLis, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH)).show();
+					new DatePickerDialog(MainActivity.this, mDateLis, mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH)).show();
 				}
-				
 			};
 
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
-				// TODO Auto-generated method stub
-				
+
 			}
 		});
 	}
 
 	protected void unloadDB() {
-		inputCv = dbHelper.getdata(MyDBHelper.TABLE_PRS, MyDBHelper.COL_TSTAMP, mdate_key);  
-		
+		mInputCvalue = mDBHelper.getdata(MyDBHelper.TABLE_PRS, MyDBHelper.COL_TSTAMP, mDate_key);
 	}
 
 	private void setupPlotter() {
-		// setup the APR History plot:
-		
+		mDBHelper = new MyDBHelper(getApplicationContext());
+		mDBHelper.openRead();
+        mARPHistoryPlot = (XYPlot) findViewById(R.id.aprHistoryPlot);
+        mPressureHistorySeries = new SimpleXYSeries("Atmospheric Pressure");
+        mPressureHistorySeries.useImplicitXVals();
+        mARPHistoryPlot.setRangeBoundaries(MINUS_Y_AXIS, PLUS_Y_AXIS, BoundaryMode.FIXED);
+        mARPHistoryPlot.setDomainBoundaries(MINUS_X_AXIS, PLUS_X_AXIS, BoundaryMode.FIXED);
+        mARPHistoryPlot.addSeries(mPressureHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null,null));
+        mARPHistoryPlot.setDomainStepValue(5);
+        mARPHistoryPlot.setTicksPerRangeLabel(3);
+        mARPHistoryPlot.setDomainLabel("Seconds");
+        mARPHistoryPlot.getDomainLabelWidget().pack();
+        mARPHistoryPlot.setRangeLabel("millibars (mb)");
+        mARPHistoryPlot.getRangeLabelWidget().pack();
 
-		
-		dbHelper = new MyDBHelper(getApplicationContext());
-		dbHelper.openRead();
-		
-        aprHistoryPlot = (XYPlot) findViewById(R.id.aprHistoryPlot);
- 
-        pressureHistorySeries = new SimpleXYSeries("Atmospheric Pressure");
-        pressureHistorySeries.useImplicitXVals();
- 
-        aprHistoryPlot.setRangeBoundaries(MINUS_Y_AXIS, PLUS_Y_AXIS, BoundaryMode.FIXED);
-        aprHistoryPlot.setDomainBoundaries(MINUS_X_AXIS, PLUS_X_AXIS, BoundaryMode.FIXED);  
-        //aprHistoryPlot.addSeries(azimuthHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null));
-        //LineAndPointFormatter f1 = new LineAndPointFormatter(Color.rgb(0, 0, 200), null, Color.rgb(0, 0, 80));
-        //f1.getFillPaint().setAlpha(220);
-        aprHistoryPlot.addSeries(pressureHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null,null));
-        aprHistoryPlot.setDomainStepValue(5);
-        aprHistoryPlot.setTicksPerRangeLabel(3);
-        aprHistoryPlot.setDomainLabel("Seconds");
-        aprHistoryPlot.getDomainLabelWidget().pack();
-        aprHistoryPlot.setRangeLabel("millibars (mb)");
-        aprHistoryPlot.getRangeLabelWidget().pack();
- 
         // setup checkboxes:
-        hwAcceleratedCb = (CheckBox) findViewById(R.id.hwAccelerationCb);
+        mHWAcceleratedCb = (CheckBox) findViewById(R.id.hwAccelerationCb);
         final PlotStatistics levelStats = new PlotStatistics(1000, false);
         final PlotStatistics histStats = new PlotStatistics(1000, false);
- 
-
-        aprHistoryPlot.addListener(histStats);
-        hwAcceleratedCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mARPHistoryPlot.addListener(histStats);
+        mHWAcceleratedCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b) {
 
-                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_NONE, null);
+                    mARPHistoryPlot.setLayerType(View.LAYER_TYPE_NONE, null);
                 } else {
 
-                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    mARPHistoryPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 }
             }
         });
-	
-        showFpsCb = (CheckBox) findViewById(R.id.showFpsCb);
-        showFpsCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+        mShowFPSCb = (CheckBox) findViewById(R.id.showFpsCb);
+        mShowFPSCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 levelStats.setAnnotatePlotEnabled(b);
                 histStats.setAnnotatePlotEnabled(b);
             }
         });
-        
-        
 	}
 
-	
-	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+		// Inflate the menu
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    super.onOptionsItemSelected(item);
-	    startActivity(settingIntent);
-		//return super.onOptionsItemSelected(item);
- 		return true;
+	    startActivity(mSettingIntent);
+	    return true;
 	}
-	
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		p =  event.values[0];
-		
-		//updatePlotter();
-		
+		mPressure =  event.values[0];
 		if (mFirstRun){
 			mFirstRun = false;
-			mMax = p;
-			mMin = p;
+			mMax = mPressure;
+			mMin = mPressure;
 			setView();
 		}
-		checkMinMax(p);
-		
+		checkMinMax(mPressure);
 		CharSequence mText;
-		mText = nformat.format(p) + "";
-		
-		tv2.setText(mText);
+		mText = mNumformat.format(mPressure) + "";
+		mTextView2.setText(mText);
 	}
 
 	private void updatePlotter() {
-
-		//Number[] series1Numbers = {p};
-        //aprLevelsSeries.setModel(Arrays.asList(series1Numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
- 
-		for(i = 0; i < inputCv.length; i++){
+		for(mIndex = 0; mIndex < mInputCvalue.length; mIndex++){
 	        // get rid the oldest sample in history:
-	        if (pressureHistorySeries.size() > HISTORY_SIZE) {
-	            pressureHistorySeries.removeFirst();
+	        if (mPressureHistorySeries.size() > HISTORY_SIZE) {
+	            mPressureHistorySeries.removeFirst();
 	        }
 	        // add the latest history sample:
 	        //pressureHistorySeries.addLast(null, inputCv.get(key));
-	        System.out.println("inputCv[" + i + "]" + inputCv[i]);
-			
+	        System.out.println("inputCv[" + mIndex + "]" + mInputCvalue[mIndex]);
+
 	        // add the latest history sample:
-	        pressureHistorySeries.addLast(null, inputCv[i]);
+	        mPressureHistorySeries.addLast(null, mInputCvalue[mIndex]);
 		}
 
         // redraw the Plots:
-        aprHistoryPlot.redraw();
+        mARPHistoryPlot.redraw();
 	}
 
+	//this method find the minimum and maximum values for a session
 	private void checkMinMax(float p) {
 		if(p > mMax){
 			mMax = p;
@@ -321,27 +295,23 @@ public class MainActivity extends Activity implements SensorEventListener{
 			mMin = p;
 			setView();
 		}
-		
 	}
-	
+
+	//set the min and max to views
 	private void setView(){
-		mMaxView.setText(nformat.format(mMax));
-		mMinView.setText(nformat.format(mMin));
+		mMaxView.setText(mNumformat.format(mMax));
+		mMinView.setText(mNumformat.format(mMin));
 	}
 
 	@Override
 	protected void onPause() {
 		mSensorManager.unregisterListener(this);
 		super.onPause();
-
 	}
 
 	@Override
 	protected void onResume() {
 		mSensorManager.registerListener(this, mSensor, DELAY_VALUE);
 		super.onResume();
-		//mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
 	}
-
 }

@@ -23,21 +23,22 @@
         android:id="@+id/textview2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/_0_0"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:text="@string/_0_0"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:id="@+id/textMin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/_0_0"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_below="@+id/textMax"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:text="@string/_0_0"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <GridLayout
+        android:id="@+id/gridLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -78,60 +79,87 @@
             android:layout_gravity="left|top"
             android:layout_row="1"
             android:entries="@array/selection_arrays" />
-
     </GridLayout>
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/maximum_reading"
-        android:id="@+id/textView2"
         android:layout_alignBottom="@+id/textMax"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentLeft="true"
+        android:text="@string/maximum_reading"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/minimum_reading"
-        android:id="@+id/textView3"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/textView2"
-        android:layout_alignParentLeft="true" />
+        android:text="@string/minimum_reading"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_alignLeft="@+id/textView3"
-        android:layout_below="@+id/textview2" >
-
+        android:layout_below="@+id/textview2"
+        android:orientation="vertical" >
 
         <com.androidplot.xy.XYPlot
             android:id="@+id/aprHistoryPlot"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:layout_marginTop="10px"
             android:layout_marginLeft="10px"
             android:layout_marginRight="10px"
-            title="A/P/R History"/>
+            android:layout_marginTop="10px"
+            android:layout_weight="1"
+            title="A/P/R History" />
 
-        <LinearLayout android:orientation="horizontal"
-            android:gravity="center"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <CheckBox android:id="@+id/hwAccelerationCb"
-                android:visibility="gone"
-                android:text="@string/hw_acceleration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" >
 
-            <CheckBox android:id="@+id/showFpsCb"
-                android:text="@string/show_fps"
+            <CheckBox
+                android:id="@+id/hwAccelerationCb"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="@string/hw_acceleration"
+                android:visibility="gone" />
+
+            <CheckBox
+                android:id="@+id/showFpsCb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/show_fps" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/gridLayout1"
+        android:layout_below="@+id/gridLayout1"
+        android:layout_marginTop="20dp" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Sensor" />  
+
+        <TextView
+            android:id="@+id/sensorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
     </LinearLayout>
 
 </RelativeLayout>
