@@ -9,7 +9,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.text.NumberFormat;
@@ -27,13 +26,11 @@ public class BaroService extends Service implements SensorEventListener{
 	private MyDBHelper mdbHelper;
 	private ContentValues mCvalues;
 	private Calendar mCal;
+
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
-
 
 	@Override
 	public void onCreate() {
@@ -45,7 +42,6 @@ public class BaroService extends Service implements SensorEventListener{
 
 		//create a instance of dbhelper class for our db related operation
 		mdbHelper = new MyDBHelper(getApplicationContext());
-
 
 		//get a writable DB for logging the barometer
 		mdbHelper.openWrite();
@@ -71,15 +67,11 @@ public class BaroService extends Service implements SensorEventListener{
 		super.onDestroy();
 	}
 
-
-
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		//Toast.makeText(BaroService.this, "onStartCommand : ", Toast.LENGTH_SHORT).show();
 		return super.onStartCommand(intent, flags, startId);
 	}
-
-
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -93,7 +85,6 @@ public class BaroService extends Service implements SensorEventListener{
 	    new SensorEventLoggerTask().execute(event);
 		mSensorManager.unregisterListener(this);
 		stopSelf();
-
 	}
 
 
@@ -111,8 +102,6 @@ public class BaroService extends Service implements SensorEventListener{
 		    mCvalues = new ContentValues();
 		    mCvalues.put(MyDBHelper.COL_MBARS, mPress);
 		    mCvalues.put(MyDBHelper.COL_TSTAMP, fdate);
-		    Log.e(TAG, "mbars : " + mCvalues.get(MyDBHelper.COL_MBARS));
-		    Log.e(TAG, "date : " + mCvalues.get(MyDBHelper.COL_TSTAMP));
 
 		    //call the insert method for logging
 		    mdbHelper.insertrow(MyDBHelper.TABLE_PRS, mCvalues);

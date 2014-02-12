@@ -47,7 +47,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private String[] mDate_key;
 	private float mPressure;
 	private int mIndex = 0;
-	private Intent mServiceIntent;
 	private Intent mBaroIntent;
 	private Intent mSettingIntent;
 	private PendingIntent mSchedulerIntent;
@@ -69,7 +68,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private static final Number MINUS_Y_AXIS = 960;
 	private static final Number PLUS_Y_AXIS = 1024;
 	private static final Number MINUS_X_AXIS = 0;
-	private static final Number PLUS_X_AXIS = 96;
+	private static final Number PLUS_X_AXIS = 24;
 	private static final int HISTORY_SIZE = (Integer) PLUS_X_AXIS; // number of points to plot in history
 	private XYPlot mARPHistoryPlot = null;
     private CheckBox mHWAcceleratedCb;
@@ -89,8 +88,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		mCalendar = Calendar.getInstance();
 		mNumformat.setMaximumFractionDigits(1);
 		mNumformat.setMinimumFractionDigits(1);
-		//intent for starting the background service
-		mServiceIntent = new Intent(MainActivity.this,BaroService.class);
+		new Intent(MainActivity.this,BaroService.class);
 		//intent for settings view
 		mSettingIntent = new Intent(MainActivity.this,SettingsActivity.class);
 		//Getting instance of UI components
@@ -102,6 +100,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		mTextView2.setText("Loading");
 		//getting scheduler instance for taking pressure readings periodically
 		mScheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		//intent for baro service, which is scheduled with mScheduler
 		mBaroIntent = new Intent(getApplicationContext(),BaroService.class);
 		mSchedulerIntent = PendingIntent.getService(getApplicationContext(), 0, mBaroIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		mMaxView = (TextView) findViewById(R.id.textMax);
@@ -123,7 +122,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 
 		if(mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
 		    //sensor is present in the device
-
 			mSensorText.setText("PRESENT");
 			mSensorText.setTextColor(Color.GREEN);
 		}else{
@@ -165,8 +163,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 			@Override
 			public void onItemSelected(final AdapterView<?> arg0, View arg1,
 					final int arg2, long arg3) {
-				//Toast.makeText(arg0.getContext(),
-				//		"OnItemSelectedListener : " + arg2,Toast.LENGTH_SHORT).show();
 				if (arg2 == 0){
 					mDate_key = null;
 				}else if (arg2 == 1)
@@ -197,7 +193,7 @@ public class MainActivity extends Activity implements SensorEventListener{
         mARPHistoryPlot.addSeries(mPressureHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null,null));
         mARPHistoryPlot.setDomainStepValue(5);
         mARPHistoryPlot.setTicksPerRangeLabel(3);
-        mARPHistoryPlot.setDomainLabel("Seconds");
+        mARPHistoryPlot.setDomainLabel("time (hr)");
         mARPHistoryPlot.getDomainLabelWidget().pack();
         mARPHistoryPlot.setRangeLabel("millibars (mb)");
         mARPHistoryPlot.getRangeLabelWidget().pack();
@@ -237,10 +233,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 		return true;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    super.onOptionsItemSelected(item);
@@ -275,13 +267,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 	            mPressureHistorySeries.removeFirst();
 	        }
 	        // add the latest history sample:
-	        //pressureHistorySeries.addLast(null, inputCv.get(key));
-	        System.out.println("inputCv[" + mIndex + "]" + mInputCvalue[mIndex]);
-
-	        // add the latest history sample:
 	        mPressureHistorySeries.addLast(null, mInputCvalue[mIndex]);
 		}
-
         // redraw the Plots:
         mARPHistoryPlot.redraw();
 	}

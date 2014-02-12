@@ -18,7 +18,6 @@ public static final String COL_TSTAMP = "TSTAMP";
 private float mbarArray[] = new float[1];
 //create table query for Pressure table
 private final static String CREATE_PRESSURE_TABLE = "create table if not exists "+TABLE_PRS+" ("+COL_MBARS+" REAL PRIMARY KEY, "+COL_TSTAMP+" TEXT NOT NULL)";
-private final static String TAG = "merin-tag";
 DatabaseHelper mSQLHelper;
 private final Context mCtx;
 private SQLiteDatabase mDB;
@@ -33,7 +32,6 @@ private SQLiteDatabase mDB;
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 	public DatabaseHelper(Context context) {
 			super(context, DB_NAME, null, DB_VERSION);
-			// TODO Auto-generated constructor stub
 		}
 
 	@Override
@@ -58,12 +56,14 @@ private SQLiteDatabase mDB;
 
     //Other DB handling helper methods
 
+	//gets a referance to writable DB.
     public MyDBHelper openWrite() throws SQLException{
     	mSQLHelper = new DatabaseHelper(mCtx);
     	mDB = mSQLHelper.getWritableDatabase();
 		return this;
    }
 
+    //gets a referance to readable DB.
     public MyDBHelper openRead() throws SQLException{
     	mSQLHelper = new DatabaseHelper(mCtx);
     	mDB = mSQLHelper.getReadableDatabase();
@@ -106,7 +106,7 @@ private SQLiteDatabase mDB;
     }
 
 
-
+//delete all the rows in the DB
 public int resetDb(String table,String field,String args[]) {
 	int i = mDB.delete(table, field, args);
 	mDB.close();
