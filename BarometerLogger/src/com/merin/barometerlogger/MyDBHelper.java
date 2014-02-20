@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 public class MyDBHelper {
 private static final String DB_NAME = "logger.db";
 private static final int    DB_VERSION = 1;
@@ -73,7 +75,7 @@ private SQLiteDatabase mDB;
     public long insertrow(String table, ContentValues cvs){
     	return mDB.insert(table, null, cvs);
 }
-    //return the DB values based on the timestamp
+    //return the pressure values from DB, no time stamp returned
     public float[] getdata(String table, String key, String date[]){
 
     	SQLiteQueryBuilder mQueryBuilder = new SQLiteQueryBuilder();
@@ -105,6 +107,39 @@ private SQLiteDatabase mDB;
 		return mbarArray;
     }
 
+  //return the values from DB, both pressure and timestamp values.
+    public ArrayList<Logger> getalldata(String table){
+
+        SQLiteQueryBuilder mQueryBuilder = new SQLiteQueryBuilder();
+        mQueryBuilder.setTables(table);
+
+        Cursor mCursor = null;
+        Logger mlogger = new Logger();
+        ArrayList<Logger> mLoggerList= new ArrayList<Logger>();
+
+        try {
+            mCursor = mQueryBuilder.query(mDB, null, null, null, null, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if(mCursor != null){
+            //mbarArray = new float[mCursor.getCount()];
+            mCursor.moveToFirst();
+
+            while(!mCursor.isAfterLast()){
+            //mbarArray[i] =  mCursor.getFloat(0);
+            //mlogger.setmPressure(mCursor.getFloat(0));
+            //mlogger.setmTimeStamp(mCursor.getString(1));
+            mLoggerList.add(new Logger(mCursor.getFloat(0), mCursor.getString(1)));
+
+            mCursor.moveToNext();
+        }
+            mCursor.close();
+            return mLoggerList;
+        }
+        return mLoggerList;
+    }
 
 //delete all the rows in the DB
 public int resetDb(String table,String field,String args[]) {
@@ -113,7 +148,5 @@ public int resetDb(String table,String field,String args[]) {
 	return i;
 
 }
-
-
 
 }

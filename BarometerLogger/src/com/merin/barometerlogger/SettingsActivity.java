@@ -9,16 +9,17 @@ import android.widget.Toast;
 
 public class SettingsActivity extends Activity {
 
-	Button mDeleteButton;
- 	MyDBHelper mDBHelper = new MyDBHelper(this);
-	int mDeletedRows;
-
+	private Button mDeleteButton;
+	private Button mExportButton;
+ 	private MyDBHelper mDBHelper = new MyDBHelper(this);
+	private int mDeletedRows;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
 		mDeleteButton = (Button) findViewById(R.id.button1);
-		mDeleteButton.setOnClickListener(new OnClickListener() {
+		mExportButton = (Button) findViewById(R.id.exportButton);
+        mDeleteButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -29,5 +30,21 @@ public class SettingsActivity extends Activity {
 
 			}
 		});
+
+		mExportButton.setOnClickListener(new OnClickListener() {
+
+            private String String;
+
+            @Override
+            public void onClick(View v) {
+                ExportDatabaseCSVTask mExpTask = new ExportDatabaseCSVTask(SettingsActivity.this);
+                mExpTask.execute(String );
+
+            }
+        });
 	}
 }
+
+
+
+
