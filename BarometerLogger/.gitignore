@@ -1,5 +1,7 @@
 /gen
+
 /libs
-/bin
+
 *.class
+
 *.dex
